@@ -1,6 +1,6 @@
 main {
   font-size: 1.2rem;
-  width: 95%;
+  width: 92%;
   margin: 0 auto;
   padding: 1rem 0;
 }
@@ -49,10 +49,14 @@ h3 {
 }
 
 .big {
-  font-size: 1.5rem;
+  font-size: 1.4rem;
+}
+
+.normal {
+  font-size: 1rem;
 }
 
 .done {
   opacity: 0.4;
-  filter: blur(1px);
+  /* filter: blur(1px); */
 }

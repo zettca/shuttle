@@ -15,3 +15,9 @@ export function getISODate(date) {
 export function capitalize(str) {
   return str.charAt(0).toUpperCase() + str.slice(1);
 }
+
+export function isPastTrip(t) {
+  const d = new Date();
+  const d2 = new Date(d.getFullYear(), d.getMonth(), d.getDate(), t[0], t[1], 0);
+  return d > d2;
+}

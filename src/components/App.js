@@ -3,7 +3,7 @@ import store from 'store';
 import { Twemoji } from 'react-emoji-render';
 import Trip from './Trip';
 import './App.css';
-import { capitalize, getTime, getISODate } from '../helpers';
+import { capitalize, getTime, getISODate, isPastTrip } from '../helpers';
 
 const URL = 'https://web.tecnico.ulisboa.pt/~ist178013/api/shuttle/';
 
@@ -31,7 +31,8 @@ class App extends React.Component {
       date: getISODate(),
       time: getTime(),
       campus: 'Taguspark',
-      period: 'weekday', //getPeriod(), // day of week
+      period: 'weekday',
+      currentPeriod: undefined,
       data: data || undefined,
     };
 
@@ -47,11 +48,13 @@ class App extends React.Component {
       fetch(URL)
         .then((res) => res.json())
         .then((data) => {
+          const period = getPeriodFromDates(data.date);
           store.set('data', data);
-          this.setState({ data, period: getPeriodFromDates(data.date) });
+          this.setState({ data, period, currentPeriod: period });
         });
     } else {
-      this.setState({ period: getPeriodFromDates(data.date) });
+      const period = getPeriodFromDates(data.date);
+      this.setState({ period, currentPeriod: period });
     }
   }
 
@@ -76,14 +79,18 @@ class App extends React.Component {
   }
 
   render() {
-    const { data, time, campus, period } = this.state;
+    const { data, time, campus, period, currentPeriod } = this.state;
     if (!data) return null;
 
     const { trips } = data;
     if (!trips) return null;
 
+    const isCurrentPeriod = period === currentPeriod;
+    const myCampus = (campus === 'Taguspark') ? 'Tagus\nAlameda' : 'Alameda\nTagus';
     const myTrips = trips.filter(t => t.type === period && t.stations[0].station === campus);
-    const myCampus = (campus === 'Taguspark') ? 'Taguspark\nAlameda' : 'Alameda\nTaguspark';
+    if (isCurrentPeriod) {
+      myTrips.sort(t => isPastTrip(t.stations[0].hour.split('.').map(i => Number(i))) ? 1 : -1);
+    }
 
     return (
       <main>
@@ -95,7 +102,7 @@ class App extends React.Component {
             <div className={'table'}>
               <span className={'block big'} onClick={this.nextPeriod}>{capitalize(period)}</span>
               <span className={'big'}>⇄</span>
-              <span className={'block'} onClick={this.nextCampus}>{myCampus}</span>
+              <span className={'block normal'} onClick={this.nextCampus}>{myCampus}</span>
             </div>
           </h3>
         </header>
@@ -105,7 +112,10 @@ class App extends React.Component {
               <div>Today is weekend!</div>
               <div><Twemoji svg text={'There is no Shuttle ❌ 🚌 😢'} /></div>
             </div>)
-            : myTrips.map((trip, i) => (<Trip key={i} stations={trip.stations} />))}
+            : myTrips.map((trip, i) => (<Trip
+              key={i}
+              isCurrent={isCurrentPeriod}
+              stations={trip.stations} />))}
         </section>
       </main>
     );
