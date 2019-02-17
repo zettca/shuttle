@@ -1,0 +1,58 @@
+main {
+  font-size: 1.2rem;
+  width: 90%;
+  margin: 0 auto;
+  padding: 1rem 0;
+}
+
+h3 {
+  font-size: 1.2rem;
+  margin: 0 0 4px;
+  user-select: none;
+}
+
+.card {
+  padding: 0.6rem 1rem;
+  margin: 1rem auto;
+  background: #FAFAFA;
+  border-radius: 2px;
+  box-shadow: 1px 1px 4px #BBB;
+}
+
+.entry {
+  display: block;
+  font-family: monospace;
+  line-height: 1.2rem;
+}
+
+.table {
+  display: table;
+}
+
+.table>span {
+  display: table-cell;
+  vertical-align: middle;
+}
+
+.left {
+  float: left;
+}
+
+.right {
+  float: right;
+}
+
+.block {
+  display: inline-block;
+  width: 6rem;
+  padding-right: 0.4rem;
+}
+
+.big {
+  font-size: 1.6rem;
+}
+
+.done {
+  opacity: 0.4;
+  filter: blur(1px);
+}

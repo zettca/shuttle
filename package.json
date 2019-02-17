@@ -1,0 +1,27 @@
+{
+  "name": "shuttle",
+  "version": "0.1.0",
+  "dependencies": {
+    "gh-pages": "^1.2.0",
+    "react": "^16.6.3",
+    "react-dom": "^16.6.3",
+    "react-emoji-render": "^0.5.0",
+    "react-scripts": "^2.1.5",
+    "store": "^2.0.12"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d build",
+    "test": "react-scripts test --env=jsdom",
+    "eject": "react-scripts eject"
+  },
+  "homepage": ".",
+  "browserslist": [
+    ">0.2%",
+    "not dead",
+    "not ie <= 11",
+    "not op_mini all"
+  ]
+}
