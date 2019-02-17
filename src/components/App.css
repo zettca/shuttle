@@ -1,6 +1,6 @@
 main {
   font-size: 1.2rem;
-  width: 90%;
+  width: 95%;
   margin: 0 auto;
   padding: 1rem 0;
 }
@@ -32,6 +32,7 @@ h3 {
 .table>span {
   display: table-cell;
   vertical-align: middle;
+  padding-right: 0.2rem;
 }
 
 .left {
@@ -44,12 +45,11 @@ h3 {
 
 .block {
   display: inline-block;
-  width: 6rem;
-  padding-right: 0.4rem;
+  width: 7rem;
 }
 
 .big {
-  font-size: 1.6rem;
+  font-size: 1.5rem;
 }
 
 .done {

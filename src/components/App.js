@@ -89,11 +89,11 @@ class App extends React.Component {
       <main>
         <header>
           <h3>
-            <div className={'right'}>
+            <div className={'right big'}>
               <span onClick={this.updateTime} style={{ lineHeight: '3rem' }}>{time}</span>
             </div>
             <div className={'table'}>
-              <span className={'block'} onClick={this.nextPeriod}>{capitalize(period)}</span>
+              <span className={'block big'} onClick={this.nextPeriod}>{capitalize(period)}</span>
               <span className={'big'}>⇄</span>
               <span className={'block'} onClick={this.nextCampus}>{myCampus}</span>
             </div>
