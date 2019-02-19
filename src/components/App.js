@@ -3,7 +3,7 @@ import store from 'store';
 import { Twemoji } from 'react-emoji-render';
 import Trip from './Trip';
 import './App.css';
-import { capitalize, getTime, getISODate, isPastTrip } from '../helpers';
+import { capitalize, getTime, getISODate, isPastTrip, splitTime } from '../helpers';
 
 const URL = 'https://web.tecnico.ulisboa.pt/~ist178013/api/shuttle/';
 
@@ -88,8 +88,13 @@ class App extends React.Component {
     const isCurrentPeriod = period === currentPeriod;
     const myCampus = (campus === 'Taguspark') ? 'Tagus\nAlameda' : 'Alameda\nTagus';
     const myTrips = trips.filter(t => t.type === period && t.stations[0].station === campus);
+
     if (isCurrentPeriod) {
-      myTrips.sort(t => isPastTrip(t.stations[0].hour.split('.').map(i => Number(i))) ? 1 : -1);
+      myTrips.sort((t1, t2) => {
+        const [h1, h2] = [t1, t2].map(t => splitTime(t.stations[0].hour));
+        const [p1, p2] = [h1, h2].map(h => isPastTrip(h));
+        return ((p1 && p2) || !(p1 || p2)) ? h1[0] - h2[0] : p1 - p2;
+      });
     }
 
     return (
