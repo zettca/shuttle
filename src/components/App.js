@@ -3,7 +3,7 @@ import store from 'store';
 import { Twemoji } from 'react-emoji-render';
 import Trip from './Trip';
 import './App.css';
-import { capitalize, getTime, getISODate, isPastTrip, splitTime } from '../helpers';
+import { capitalize, getTime, getISODate, isPastTrip, timeToDate } from '../helpers';
 
 const URL = 'https://web.tecnico.ulisboa.pt/~ist178013/api/shuttle/';
 
@@ -88,12 +88,14 @@ class App extends React.Component {
     const isCurrentPeriod = period === currentPeriod;
     const myCampus = (campus === 'Taguspark') ? 'Tagus\nAlameda' : 'Alameda\nTagus';
     const myTrips = trips.filter(t => t.type === period && t.stations[0].station === campus);
+    const numPastTrips = trips.reduce((acc, t) => acc + isPastTrip(timeToDate(t.stations[0].hour)), 0);
+    const useFilter = numPastTrips > 0 && numPastTrips < myTrips.length;
 
     if (isCurrentPeriod) {
-      myTrips.sort((t1, t2) => {
-        const [h1, h2] = [t1, t2].map(t => splitTime(t.stations[0].hour));
-        const [p1, p2] = [h1, h2].map(h => isPastTrip(h));
-        return ((p1 && p2) || !(p1 || p2)) ? h1[0] - h2[0] : p1 - p2;
+      myTrips.sort((trip1, trip2) => {
+        const [d1, d2] = [trip1, trip2].map(t => timeToDate(t.stations[0].hour));
+        const [p1, p2] = [d1, d2].map(d => isPastTrip(d));
+        return (p1 + p2 === 1) ? p1 - p2 : d1 - d2;
       });
     }
 
@@ -119,7 +121,8 @@ class App extends React.Component {
             </div>)
             : myTrips.map((trip, i) => (<Trip
               key={i}
-              isCurrent={isCurrentPeriod}
+              isDone={isPastTrip(timeToDate(time))}
+              useFilter={isCurrentPeriod && useFilter}
               stations={trip.stations} />))}
         </section>
       </main>

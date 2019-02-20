@@ -2,13 +2,11 @@ export function pad0(n) {  // padding with 0
   return n > 9 ? n : '0' + n;
 }
 
-export function getTime(date) {
-  const d = date || new Date();
+export function getTime(d = new Date()) {
   return [d.getHours(), d.getMinutes()].map(pad0).join(':');
 }
 
-export function getISODate(date) {
-  const d = date || new Date();
+export function getISODate(d = new Date()) {
   return [d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate()].map(pad0).join('-');
 }
 
@@ -21,12 +19,11 @@ export function hmsToDate(hour = 0, min = 0, sec = 0) {
   return new Date(d.getFullYear(), d.getMonth(), d.getDate(), hour, min, sec);
 }
 
-export function isPastTrip(t) {
-  const d = new Date();
-  const d2 = hmsToDate(t[0], t[1]);
-  return d > d2;
+export function isPastTrip(date) {
+  return new Date() > date;
 }
 
-export function splitTime(timeString) {
-  return timeString.split(/:|\./g).map(i => Number(i));
+export function timeToDate(timeString) {
+  const t = timeString.split(/:|\./g);
+  return hmsToDate(t[0], t[1], t[2]);
 }
