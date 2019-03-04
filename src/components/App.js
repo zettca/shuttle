@@ -51,7 +51,7 @@ class App extends React.Component {
 
     for (const d of dates) {
       const [d1, d2] = [d.start, d.end].map(d => moment(d, 'DD/MM/YYYY'));
-      if (moment(date).isBetween(d1, d2)) return d.type;
+      if (moment(date).isBetween(d1, d2, 'day', '[]')) return d.type;
     }
 
     return DAYOFF_NAME;
