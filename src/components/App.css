@@ -29,10 +29,15 @@ h3 {
   display: table;
 }
 
-.table>span {
+.table span {
   display: table-cell;
   vertical-align: middle;
   padding-right: 0.2rem;
+}
+
+.title {
+  width: 9rem !important;
+  white-space: nowrap;
 }
 
 .left {
@@ -58,5 +63,4 @@ h3 {
 
 .done {
   opacity: 0.4;
-  /* filter: blur(1px); */
 }

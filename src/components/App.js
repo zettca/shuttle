@@ -1,25 +1,12 @@
 import React from 'react';
 import store from 'store';
+import moment from 'moment';
 import { Twemoji } from 'react-emoji-render';
 import Trip from './Trip';
 import './App.css';
-import { capitalize, getTime, getISODate, isPastTrip, timeToDate } from '../helpers';
 
 const URL = 'https://web.tecnico.ulisboa.pt/~ist178013/api/shuttle/';
-
-function getPeriodFromDates(dates) {
-  const date = new Date();
-
-  for (const da of dates) {
-    const [s1, s2] = [da.start, da.end].map(d => d.split('/').reverse().map(d => Number(d)));
-    s1[1]--;
-    s2[1]--;
-    const [d1, d2] = [s1, s2].map(s => new Date(...s));
-    if (date >= d1 && date <= d2) return da.type;
-  }
-
-  return 'weekend';
-}
+const DAYOFF_NAME = 'weekend';
 
 class App extends React.Component {
   constructor(props) {
@@ -28,34 +15,52 @@ class App extends React.Component {
     const data = store.get('data');
 
     this.state = {
-      date: getISODate(),
-      time: getTime(),
+      date: new Date(/*2019, 2, 4, 10, 10, 10*/),
       campus: 'Taguspark',
       period: 'weekday',
-      currentPeriod: undefined,
-      data: data || undefined,
+      data: data,
     };
 
+    this.nextDate = this.nextDate.bind(this);
     this.nextCampus = this.nextCampus.bind(this);
-    this.nextPeriod = this.nextPeriod.bind(this);
-    this.updateTime = this.updateTime.bind(this);
+    this.updateDate = this.updateDate.bind(this);
+    this.isPastTrip = this.isPastTrip.bind(this);
   }
 
   componentDidMount() {
-    const { data } = this.state;
+    fetch(URL)
+      .then((res) => res.json())
+      .then((data) => {
+        store.set('data', data);
+        this.setState({ data });
+      });
+  }
 
-    if (data === undefined) {
-      fetch(URL)
-        .then((res) => res.json())
-        .then((data) => {
-          const period = getPeriodFromDates(data.date);
-          store.set('data', data);
-          this.setState({ data, period, currentPeriod: period });
-        });
-    } else {
-      const period = getPeriodFromDates(data.date);
-      this.setState({ period, currentPeriod: period });
+  componentDidUpdate(prevProps, prevState) {
+    const { date, data } = this.state;
+
+    const period = this.getPeriodFromDates(date, data.date);
+    if (period !== prevState.period) {
+      this.setState({ period });
     }
+  }
+
+  getPeriodFromDates(date, dates) {
+    if (dates == null) return null;
+    else if (date.getDay() % 6 === 0) return DAYOFF_NAME;
+
+    for (const d of dates) {
+      const [d1, d2] = [d.start, d.end].map(d => moment(d, 'DD/MM/YYYY'));
+      if (moment(date).isBetween(d1, d2)) return d.type;
+    }
+
+    return DAYOFF_NAME;
+  }
+
+  nextDate() {
+    const { date } = this.state;
+    date.setDate(date.getDate() + 1);
+    this.setState({ date });
   }
 
   nextCampus() {
@@ -66,64 +71,69 @@ class App extends React.Component {
     this.setState({ campus: campi[i] });
   }
 
-  nextPeriod() {
-    const { period } = this.state;
-    const periods = ['weekday', 'holidays', 'exams'];
-    const i = ((periods.indexOf(period) || 0) + 1) % periods.length;
-
-    this.setState({ period: periods[i] });
+  updateDate() {
+    this.setState({ date: new Date() });
   }
 
-  updateTime() {
-    this.setState({ time: getTime() });
+  capitalize(str) {
+    return str && str.charAt(0).toUpperCase() + str.slice(1);
+  }
+
+  isPastTrip(hr) {
+    const { date } = this.state;
+
+    const [min1, min2] = [moment(date), moment(hr, 'HH:mm')].map(m => m.minutes() + m.hours() * 60);
+    return min1 > min2;
   }
 
   render() {
-    const { data, time, campus, period, currentPeriod } = this.state;
-    if (!data) return null;
+    const { data, date, campus, period } = this.state;
+    if (!data || !data.trips) return null;
 
     const { trips } = data;
-    if (!trips) return null;
 
-    const isCurrentPeriod = period === currentPeriod;
-    const myCampus = (campus === 'Taguspark') ? 'Tagus\nAlameda' : 'Alameda\nTagus';
+    const myCampus = (campus === 'Taguspark') ? ['Tagus', 'Alameda'] : ['Alameda', 'Tagus'];
     const myTrips = trips.filter(t => t.type === period && t.stations[0].station === campus);
-    const numPastTrips = trips.reduce((acc, t) => acc + isPastTrip(timeToDate(t.stations[0].hour)), 0);
-    const useFilter = numPastTrips > 0 && numPastTrips < myTrips.length;
 
-    if (isCurrentPeriod) {
-      myTrips.sort((trip1, trip2) => {
-        const [d1, d2] = [trip1, trip2].map(t => timeToDate(t.stations[0].hour));
-        const [p1, p2] = [d1, d2].map(d => isPastTrip(d));
-        return (p1 + p2 === 1) ? p1 - p2 : d1 - d2;
-      });
-    }
+    const numPastTrips = myTrips.reduce((acc, t) => acc + this.isPastTrip(t.stations[0].hour), 0);
+    const useFilter = moment().isSame(date, 'day') && numPastTrips > 0 && numPastTrips < myTrips.length;
+
+    myTrips.sort((trip1, trip2) => {
+      const [d1, d2] = [trip1, trip2].map(t => moment(t.stations[0].hour, 'HH:mm'));
+      const [p1, p2] = [d1, d2].map(d => this.isPastTrip(d));
+      return (useFilter && p1 + p2 === 1) ? p1 - p2 : d1 - d2;
+    });
 
     return (
       <main>
         <header>
           <h3>
-            <div className={'right big'}>
-              <span onClick={this.updateTime} style={{ lineHeight: '3rem' }}>{time}</span>
+            <div className='right big'>
+              <span onClick={this.updateDate} style={{ lineHeight: '3rem' }}>{moment(date).format('HH:mm')}</span>
             </div>
-            <div className={'table'}>
-              <span className={'block big'} onClick={this.nextPeriod}>{capitalize(period)}</span>
-              <span className={'big'}>⇄</span>
-              <span className={'block normal'} onClick={this.nextCampus}>{myCampus}</span>
+            <div className='table'>
+              <span className='block title' onClick={this.nextDate}>
+                <div className='big'>{moment(date).format('ddd, D MMM')}</div>
+                <div>{this.capitalize(period)}</div>
+              </span>
+              <span onClick={this.nextCampus}>
+                <span className='big'>⇄</span>
+                <span className='block'>
+                  {myCampus.join('\n')}
+                </span>
+              </span>
             </div>
           </h3>
         </header>
-        <section id="infos" className={'table'}>
-          {(period === 'weekend')
-            ? (<div className={'card'}>
-              <div>Today is weekend!</div>
-              <div><Twemoji svg text={'There is no Shuttle ❌ 🚌 😢'} /></div>
+        <section id="infos" className='table'>
+          {(period === DAYOFF_NAME)
+            ? (<div className='card center'>
+              <div>There is no Shuttle for this day!</div>
+              <div className='big'><Twemoji svg text={'❌ 🚌 😢 😭'} /></div>
             </div>)
-            : myTrips.map((trip, i) => (<Trip
-              key={i}
-              isDone={isPastTrip(timeToDate(time))}
-              useFilter={isCurrentPeriod && useFilter}
-              stations={trip.stations} />))}
+            : myTrips.map((trip, i) => (<Trip key={i} stations={trip.stations}
+              isDone={this.isPastTrip(trip.stations[0].hour)}
+              useFilter={useFilter} />))}
         </section>
       </main>
     );
