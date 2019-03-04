@@ -112,15 +112,13 @@ class App extends React.Component {
               <span onClick={this.updateDate} style={{ lineHeight: '3rem' }}>{moment(date).format('HH:mm')}</span>
             </div>
             <div className='table'>
-              <span className='block title' onClick={this.nextDate}>
+              <span id='title' onClick={this.nextDate}>
                 <div className='big'>{moment(date).format('ddd, D MMM')}</div>
                 <div>{this.capitalize(period)}</div>
               </span>
-              <span onClick={this.nextCampus}>
+              <span id='campus' className='table' onClick={this.nextCampus}>
                 <span className='big'>⇄</span>
-                <span className='block'>
-                  {myCampus.join('\n')}
-                </span>
+                <span>{myCampus.join('\n')}</span>
               </span>
             </div>
           </h3>

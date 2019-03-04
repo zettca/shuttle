@@ -29,15 +29,19 @@ h3 {
   display: table;
 }
 
-.table span {
+.table>span {
   display: table-cell;
   vertical-align: middle;
   padding-right: 0.2rem;
 }
 
-.title {
-  width: 9rem !important;
+#title {
+  width: 9rem;
   white-space: nowrap;
+}
+
+#campus {
+  width: 7rem;
 }
 
 .left {
@@ -46,11 +50,6 @@ h3 {
 
 .right {
   float: right;
-}
-
-.block {
-  display: inline-block;
-  width: 7rem;
 }
 
 .big {
